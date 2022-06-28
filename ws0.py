@@ -1,5 +1,6 @@
-from this import s
 import time
+import datetime
+import csv
 import os.path
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -7,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+
 
 PATH = os.path.abspath('chromedriver')  
 
@@ -102,32 +104,42 @@ try:
     print(loadmore.text)
     loadmore.click()
     count += 1
-    #10
-    loadmore = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH,"//*[@id='top-songs']/div/div[4]/div"))
-    )
-    print("pág.",count)
-    print(loadmore.text)
-    loadmore.click()
-    count += 1
 except:
-    print("excepteado lince")
+    print("nada que clickear maquina")
     pass
 
+#obtenemos los elementos del DOM
 
 tops = driver.find_element(By.ID,"top-songs")
 songtainer = tops.find_element(By.CLASS_NAME,"PageGridFull-idpot7-0.jeWXO")
-
 elements = songtainer.find_elements(By.TAG_NAME,"a")
 
-songlist1=[]
+#procesamos los elementos obtenidos(obtenemos un string por elemento)
+
+ct=(datetime.datetime.now().strftime("%d-%m-%Y"))
+songlist1=[["position","songname","artist","views","fetched"]] # este primer elemento de la lista sera la cabecera de nuestro .csv
+
 for songstr in elements:
     song = (songstr.text).split("\n") #convertimos el string a una lista
     song.remove("LYRICS") #le sacamos el elemento que contiene "LYRICS"
     if len(song) > 4:   #algunas canciones tienen un elemento mas que no nos interesa, lo removemos
         song.pop(3)
-    print(song)
+    song[0] = int(song[0]) #el elemento song[3] tambien es un numero, pero eso lo resolveremos mas adelante
+    song.append(ct)  #fecha cuando se obtuvo la info
     songlist1.append(song)
+
+
+#queremos pasar la inforamacion de la lista de listas al csv
+
+cdm = (datetime.datetime.now().strftime("%d-%m"))
+
+fname = "info "+cdm+".csv"
+with open ("output/"+fname,"w") as file:
+    print("writing csv file...")
+    writer = csv.writer(file)
+    writer.writerows(songlist1) 
+print("csv done:",fname)   
+
 
     
 
